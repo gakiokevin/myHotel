@@ -2,6 +2,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Hotel, Users, CreditCard, AlertTriangle ,CalendarCheck,Home,User } from 'lucide-react';
+import api from '../api/api'
+import {format} from 'date-fns'
 
 interface DashboardStats {
   totalRooms: number;
@@ -25,7 +27,7 @@ const Dashboard = () => {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['dashboardStats'],
     queryFn: async () => {
-      const { data } = await axios.get('http://localhost:3000/api/dashboard/stats');
+      const { data } = await api.get('/api/dashboard/stats');
   
       const totalRooms = Object.values(data.roomStats)
         .map((room) => room.count ) 
@@ -147,7 +149,7 @@ const Dashboard = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {new Date(booking.check_in_date).toLocaleDateString()}
+                      {format(new Date(booking.check_in_date), 'MMM dd, yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

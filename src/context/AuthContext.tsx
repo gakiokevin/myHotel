@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
      
       const { token, user: userData } = response.data;
       localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(userData);
     } catch (error ) {
        let err = error as AxiosError

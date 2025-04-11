@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { DoorOpen, CreditCard } from 'lucide-react';
 import ReceiptGenerator from '../components/Receipt';
-
+import api from '../api/api'
 interface Room {
   id: number;
   room_number: string;
@@ -30,6 +29,9 @@ interface CheckInData {
   payment_type: 'now' | 'later';
   payment_method?: 'cash' | 'mpesa';
   transaction_id?: string;
+  check_in_date:string;
+  check_out_date:string
+
 }
 
 const CheckIn = () => {
@@ -42,13 +44,13 @@ const CheckIn = () => {
   const { data: availableRooms } = useQuery<Room[]>({
     queryKey: ['available-rooms'],
     queryFn: async () => {
-      const { data } = await axios.get('http://localhost:3000/api/rooms/available');
+      const { data } = await api.get('/api/rooms/available');
       return data;
     },
   });
 
   const checkIn = useMutation({
-    mutationFn: (data: CheckInData) => axios.post('http://localhost:3000/api/check-in', data),
+    mutationFn: (data: CheckInData) => api.post('/api/check-in', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['available-rooms'] });
 
@@ -110,105 +112,129 @@ const CheckIn = () => {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Guest Information</h2>
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget as HTMLFormElement);
-                setCheckInData({
-                  ...checkInData,
-                  guest: {
-                    first_name: formData.get('first_name') as string,
-                    last_name: formData.get('last_name') as string,
-                    phone: formData.get('phone') as string,
-                    email: formData.get('email') as string || undefined,
-                    id_type: formData.get('id_type') as string,
-                    id_number: formData.get('id_number') as string,
-                  },
-                });
-                setStep(3);
-              }}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name*</label>
-                  <input
-                    type="text"
-                    name="first_name"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name*</label>
-                  <input
-                    type="text"
-                    name="last_name"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
+  onSubmit={(e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    setCheckInData({
+      ...checkInData,
+      guest: {
+        first_name: formData.get('first_name') as string,
+        last_name: formData.get('last_name') as string,
+        phone: formData.get('phone') as string,
+        email: formData.get('email') as string || undefined,
+        id_type: formData.get('id_type') as string,
+        id_number: formData.get('id_number') as string,
+      },
+      check_in_date: formData.get('check_in_date') as string,
+      check_out_date: formData.get('check_out_date') as string,
+    });
+    setStep(3);
+  }}
+  className="space-y-4"
+>
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700">First Name*</label>
+      <input
+        type="text"
+        name="first_name"
+        required
+        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Last Name*</label>
+      <input
+        type="text"
+        name="last_name"
+        required
+        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      />
+    </div>
+  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number*</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Phone Number*</label>
+    <input
+      type="tel"
+      name="phone"
+      required
+      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+    />
+  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Email</label>
+    <input
+      type="email"
+      name="email"
+      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+    />
+  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">ID Type*</label>
-                  <select
-                    name="id_type"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="">Select ID Type</option>
-                    <option value="Passport">Passport</option>
-                    <option value="National ID">National ID</option>
-                    <option value="Driver License">Driver License</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">ID Number*</label>
-                  <input
-                    type="text"
-                    name="id_number"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700">ID Type*</label>
+      <select
+        name="id_type"
+        required
+        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      >
+        <option value="">Select ID Type</option>
+        <option value="Passport">Passport</option>
+        <option value="National ID">National ID</option>
+        <option value="Driver License">Driver License</option>
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">ID Number*</label>
+      <input
+        type="text"
+        name="id_number"
+        required
+        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      />
+    </div>
+  </div>
 
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-                >
-                  Next
-                </button>
-              </div>
-            </form>
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Check-in Date*</label>
+      <input
+        type="date"
+        name="check_in_date"
+        required
+        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Check-out Date*</label>
+      <input
+        type="date"
+        name="check_out_date"
+        required
+        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      />
+    </div>
+  </div>
+
+  <div className="flex justify-between pt-4">
+    <button
+      type="button"
+      onClick={() => setStep(1)}
+      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+    >
+      Back
+    </button>
+    <button
+      type="submit"
+      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+    >
+      Next
+    </button>
+  </div>
+</form>
+
           </div>
         );
 
