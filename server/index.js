@@ -20,7 +20,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/analytics', dashboardRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/check-in',checkInRoute)
 app.use('/api/check-out',checkOutRoute)

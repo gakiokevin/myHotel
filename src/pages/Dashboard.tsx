@@ -27,7 +27,7 @@ const Dashboard = () => {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['dashboardStats'],
     queryFn: async () => {
-      const { data } = await api.get('/api/dashboard/stats');
+      const { data } = await api.get('/api/analytics/stats');
   
       const totalRooms = Object.values(data.roomStats)
         .map((room) => room.count ) 
