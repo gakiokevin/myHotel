@@ -6,10 +6,12 @@ import  {
   createRoom,
   updateRoom,
   getAvailableRooms,
+  deleteRoom
 } from '../controllers/roomController.js';
 
 roomRoutes.get('/', getRooms);
 roomRoutes.get('/available', getAvailableRooms);
 roomRoutes.post('/', createRoom);
 roomRoutes.put('/:id', updateRoom);
+roomRoutes.delete('/:id',deleteRoom)
 

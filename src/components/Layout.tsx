@@ -1,9 +1,7 @@
 import React from 'react';
-import { Outlet, Navigate, Link ,useLocation} from 'react-router-dom';
+import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Hotel, Calendar, Users, CreditCard, BarChart2, LogOut,UserPlus,  Settings,
-  CheckSquare,
-  DoorOpen, } from 'lucide-react';
+import { Hotel, Calendar, Users, CreditCard, BarChart2, LogOut, UserPlus, Settings, CheckSquare, DoorOpen } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout, isLoading } = useAuth();
@@ -27,6 +25,10 @@ const Layout = () => {
             <Hotel className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold">Hotel Manager</span>
           </div>
+       
+          <div className="mt-4 text-sm text-gray-600">
+            Welcome back, <span className="font-semibold text-blue-600">{user.name}</span>!
+          </div>
         </div>
         <nav className="mt-6">
           <Link
@@ -37,23 +39,23 @@ const Layout = () => {
             Dashboard
           </Link>
           <Link
-        to="/check-in"
-        className={`flex items-center px-6 py-3 text-gray-700 ${
-          isActive('/check-in') ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50 hover:text-blue-600'
-        }`}
-      >
-        <DoorOpen className="h-5 w-5 mr-3" />
-        Check-in
-      </Link>
-      <Link
-        to="/check-out"
-        className={`flex items-center px-6 py-3 text-gray-700 ${
-          isActive('/check-out') ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50 hover:text-blue-600'
-        }`}
-      >
-        <CheckSquare className="h-5 w-5 mr-3" />
-        Check-out
-      </Link>
+            to="/check-in"
+            className={`flex items-center px-6 py-3 text-gray-700 ${
+              isActive('/check-in') ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50 hover:text-blue-600'
+            }`}
+          >
+            <DoorOpen className="h-5 w-5 mr-3" />
+            Check-in
+          </Link>
+          <Link
+            to="/check-out"
+            className={`flex items-center px-6 py-3 text-gray-700 ${
+              isActive('/check-out') ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50 hover:text-blue-600'
+            }`}
+          >
+            <CheckSquare className="h-5 w-5 mr-3" />
+            Check-out
+          </Link>
           <Link
             to="/bookings"
             className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
@@ -61,7 +63,6 @@ const Layout = () => {
             <Calendar className="h-5 w-5 mr-3" />
             Bookings
           </Link>
-         
           <Link
             to="/guests"
             className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
@@ -69,44 +70,29 @@ const Layout = () => {
             <Users className="h-5 w-5 mr-3" />
             Guests
           </Link>
-          <Link
-            to="/payments"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-          >
-            <CreditCard className="h-5 w-5 mr-3" />
-            Payments
-          </Link>
           {user.role === 'owner' && (
-            <> <Link
-            to="/rooms"
-            className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-          >
-            <Hotel className="h-5 w-5 mr-3" />
-            Rooms
-          </Link>
-          <Link
-              to="/analytics"
-              className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-            >
-              <BarChart2 className="h-5 w-5 mr-3" />
-              Analytics
-            </Link>
-            <Link
+            <>
+              <Link
+                to="/rooms"
+                className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+              >
+                <Hotel className="h-5 w-5 mr-3" />
+                Rooms
+              </Link>
+              <Link
+                to="/analytics"
+                className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+              >
+                <BarChart2 className="h-5 w-5 mr-3" />
+                Analytics
+              </Link>
+              <Link
                 to="/employees"
                 className="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
               >
                 <UserPlus className="h-5 w-5 mr-3" />
                 Employees
               </Link>
-              <Link
-        to="/settings"
-        className={`flex items-center px-6 py-3 text-gray-700 ${
-          isActive('/settings') ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50 hover:text-blue-600'
-        }`}
-      >
-        <Settings className="h-5 w-5 mr-3" />
-        Settings
-      </Link>
             </>
           )}
         </nav>

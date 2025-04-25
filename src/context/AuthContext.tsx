@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       axios.get('http://localhost:3000/api/auth/me')
         .then(response => {
           let user = response.data.user
-          console.log("respose data",response.data.user)
+         
           setUser(user)
           
         })

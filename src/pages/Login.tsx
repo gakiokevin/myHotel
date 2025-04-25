@@ -30,7 +30,7 @@ const Login = () => {
         <div className="flex justify-center mb-8">
           <Hotel className="h-12 w-12 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-center mb-6">Hotel Management System</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Web-Based Premise Hotel Management System</h2>
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}

@@ -99,10 +99,11 @@ export const addEmployee = async (req, res) => {
     res.status(201).json({
      
       id: insertId,
+      message:'employee succesful created'
      
     });
   } catch (error) {
-    console.log('Add employee error:', error);
+   
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Plus, Users, Trash2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import EmptyState from '../components/emptyState';
+
 
 interface Employee {
   id: number;
@@ -24,10 +26,12 @@ const EmployeeManagement = () => {
   });
 
   const createEmployee = useMutation({
-    mutationFn: (newEmployee: { email: string; name: string; password: string; role: string }) => {
-      return axios.post("http://localhost:3000/api/auth/employees", newEmployee);
+    mutationFn: async (newEmployee: { email: string; name: string; password: string; role: string }) => {
+       const response = await axios.post("http://localhost:3000/api/auth/employees", newEmployee);
+      return  response.data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+   toast.success(data.message)
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       setIsModalOpen(false);
     },

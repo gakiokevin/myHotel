@@ -21,7 +21,7 @@ export const processCheckOut = async (req, res) => {
   
       // // 1. Process payment if unpaid
       if (payment) {
-        receiptNumber = generateReceiptNumber(booking_id)
+       
         await conn.query(
           `INSERT INTO Payments (booking_id, amount, payment_method, transaction_id,receipt_number,collected_by)
            VALUES (?, ?, ?, ?,?,?)`,
@@ -32,6 +32,7 @@ export const processCheckOut = async (req, res) => {
           `UPDATE Bookings SET payment_status = 'Paid' WHERE id = ?`,
           [booking_id]
         );
+        receiptNumber = generateReceiptNumber(booking_id)
       }
   
       // 2. Record damage if reported

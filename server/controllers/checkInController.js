@@ -9,10 +9,13 @@ export const processCheckIn = async (req, res) => {
     room_id,
     amount,
     payment_type,
+    check_in_date,
+    check_out_date,
     payment_method,
     transaction_id
   } = req.body;
 
+   let receiptNumber
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -37,18 +40,19 @@ export const processCheckIn = async (req, res) => {
     // 2. Create booking
     const bookingResult = await conn.query(
       `INSERT INTO Bookings (
-        guest_id, room_id, check_in_date, status, payment_status,total_amount
-       ) VALUES (?, ?, NOW(), 'Checked-in', ?, ?)`,
+        guest_id, room_id, check_in_date,check_out_date, status, payment_status,total_amount
+       ) VALUES (?, ?, NOW(),?, 'Checked-in', ?, ?)`,
       [
         guest_id,
         room_id,
+        check_out_date,
         payment_type === 'now' ? 'Paid' : 'Unpaid',
         amount
       ]
     );
 
     const booking_id =Number(bookingResult.insertId);
-    let receiptNumber = generateReceiptNumber(booking_id)
+     
 
     // // 3. Record payment if paid now
     if (payment_type === 'now') {
@@ -58,9 +62,7 @@ export const processCheckIn = async (req, res) => {
         [booking_id,(await conn.query(`SELECT price_per_night FROM Rooms WHERE id = ?`, [room_id]))[0].price_per_night,payment_method, transaction_id || null,receiptNumber,req.user.id]
       );
 
-
-
-
+      receiptNumber = generateReceiptNumber(booking_id)
       
       
     }
@@ -72,7 +74,7 @@ export const processCheckIn = async (req, res) => {
     );
 
     await conn.commit();
-    res.json({success: true, receiptNumber:receiptNumber});
+    res.json({success: true, receiptNumber:receiptNumber || null});
     
   } catch (err) {
     await conn.rollback();

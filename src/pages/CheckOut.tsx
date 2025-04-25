@@ -4,13 +4,14 @@ import axios from 'axios';
 import { CheckSquare, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import ReceiptGenerator from '../components/Receipt';
+import { toast } from 'react-hot-toast';
 
 interface ActiveBooking {
   id: number;
   guest_name: string;
   room_number: string;
   check_in_date: string;
-  check_out_date?: string;
+  check_out_date: string;
   total_amount: number;
   payment_status: 'paid' | 'unpaid';
 }
@@ -33,6 +34,7 @@ const CheckOut = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDamageModal, setShowDamageModal] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptNumber,setReceiptNumber]= useState('')
   const [paymentDetails, setPaymentDetails] = useState<PaymentData | null>(null);
   const [damageReport, setDamageReport] = useState<DamageReport>({
     description: '',
@@ -46,6 +48,7 @@ const CheckOut = () => {
     queryKey: ['active-bookings'],
     queryFn: async () => {
       const { data } = await axios.get('http://localhost:3000/api/bookings/active');
+    
       return data;
     },
   });
@@ -73,15 +76,22 @@ const CheckOut = () => {
     }) => {
       return axios.post('http://localhost:3000/api/check-out', data);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (response, variables) => {
+ let receiptNumber=response.data.receiptNumber
+
+      setReceiptNumber(receiptNumber)
+     
       // Only show receipt if payment was processed now
       if (variables.payment) {
         setShowReceipt(true);
       } else {
         // For paid bookings or damage reports without payment
         queryClient.invalidateQueries({ queryKey: ['active-bookings'] });
+        const guestName = selectedBooking?.guest_name
+      toast.success(`Succesfully checked out ${guestName}`)
         resetState();
       }
+
     },
     onError: (error: any) => {
       alert(`Error: ${error.response?.data?.error || error.message}`);
@@ -138,6 +148,9 @@ const CheckOut = () => {
                 <p className="text-gray-600">Guest: {booking.guest_name}</p>
                 <p className="text-gray-600">
                   Check-in: {format(new Date(booking.check_in_date), 'MMM dd, yyyy')}
+                </p>
+                <p className="text-gray-600">
+                  Check-out: {format(new Date(booking.check_out_date), 'MMM dd, yyyy')}
                 </p>
                 <p className="text-gray-600">
                   Total: Kshs {Number(booking.total_amount).toFixed(2)}
@@ -351,11 +364,12 @@ const CheckOut = () => {
             guest_name: selectedBooking.guest_name,
             room_number: selectedBooking.room_number,
             check_in_date: selectedBooking.check_in_date,
-            check_out_date: new Date().toISOString(),
+            check_out_date: selectedBooking.check_out_date,
             total_amount: selectedBooking.total_amount,
             payment_status: 'paid',
             payment_method: paymentDetails.method,
             transaction_id: paymentDetails.transaction_id,
+            receiptNumber:receiptNumber
           }}
           onClose={() => {
             queryClient.invalidateQueries({ queryKey: ['active-bookings'] });

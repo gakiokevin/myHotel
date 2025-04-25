@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DoorOpen, CreditCard } from 'lucide-react';
 import ReceiptGenerator from '../components/Receipt';
 import api from '../api/api'
+import { toast } from 'react-hot-toast';
 interface Room {
   id: number;
   room_number: string;
@@ -51,7 +52,8 @@ const CheckIn = () => {
 
   const checkIn = useMutation({
     mutationFn: (data: CheckInData) => api.post('/api/check-in', data),
-    onSuccess: () => {
+    onSuccess: (response,checkInData) => {
+      const receiptNumber = response.data?.receiptNumber
       queryClient.invalidateQueries({ queryKey: ['available-rooms'] });
 
       if(checkInData.payment_type==='now'){
@@ -60,14 +62,18 @@ const CheckIn = () => {
         guest_name: `${checkInData.guest?.first_name} ${checkInData.guest?.last_name}`,
         room_number: selectedRoom?.room_number,
         check_in_date: new Date().toISOString(),
+        check_out_date:checkInData.check_out_date,
         total_amount: checkInData.amount || 0,
         payment_status: checkInData.payment_type === 'now' ? 'paid' : 'unpaid',
         payment_method: checkInData.payment_method,
-        transaction_id: checkInData.transaction_id
+        transaction_id: checkInData.transaction_id,
+        receiptNumber:receiptNumber
       });
         setShowReceipt(true)
       }else{
-        alert('checking succesful without payment')}
+        toast.success(`Please collect Kes ${checkInData.amount} from ${checkInData.guest.first_name} ${checkInData.guest.last_name} on checkout `)
+     
+      }
       
     },
     onError: (error: any) => {
@@ -112,24 +118,50 @@ const CheckIn = () => {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Guest Information</h2>
             <form
-  onSubmit={(e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
-    setCheckInData({
-      ...checkInData,
-      guest: {
-        first_name: formData.get('first_name') as string,
-        last_name: formData.get('last_name') as string,
-        phone: formData.get('phone') as string,
-        email: formData.get('email') as string || undefined,
-        id_type: formData.get('id_type') as string,
-        id_number: formData.get('id_number') as string,
-      },
-      check_in_date: formData.get('check_in_date') as string,
-      check_out_date: formData.get('check_out_date') as string,
-    });
-    setStep(3);
-  }}
+onSubmit={(e) => {
+  e.preventDefault();
+  const formData = new FormData(e.currentTarget as HTMLFormElement);
+
+  const checkInDateRaw = formData.get('check_in_date') as string;
+  const checkOutDateRaw = formData.get('check_out_date') as string;
+
+  // Force 2PM check-in, 10AM check-out
+  const checkInDate = new Date(`${checkInDateRaw}T14:00:00`);
+  const checkOutDate = new Date(`${checkOutDateRaw}T10:00:00`);
+
+  // Format date for MySQL: 'YYYY-MM-DD HH:MM:SS'
+  const formatForMySQL = (date: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  };
+
+  const formattedCheckInDate = formatForMySQL(checkInDate);
+  const formattedCheckOutDate = formatForMySQL(checkOutDate);
+
+  const diffInTime = checkOutDate.getTime() - checkInDate.getTime();
+  const nights = Math.ceil(diffInTime / (1000 * 60 * 60 * 24));
+  const room = availableRooms?.find(r => r.id === checkInData.room_id);
+  const totalAmount = (room?.price_per_night || 0) * nights;
+
+  setCheckInData({
+    ...checkInData,
+    guest: {
+      first_name: formData.get('first_name') as string,
+      last_name: formData.get('last_name') as string,
+      phone: formData.get('phone') as string,
+      email: formData.get('email') as string || undefined,
+      id_type: formData.get('id_type') as string,
+      id_number: formData.get('id_number') as string,
+    },
+    check_in_date: formattedCheckInDate,
+    check_out_date: formattedCheckOutDate,
+    amount: totalAmount,
+  });
+
+  setStep(3);
+}}
+
+  
   className="space-y-4"
 >
   <div className="grid grid-cols-2 gap-4">
@@ -201,20 +233,22 @@ const CheckIn = () => {
     <div>
       <label className="block text-sm font-medium text-gray-700">Check-in Date*</label>
       <input
-        type="date"
-        name="check_in_date"
-        required
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-      />
+  type="date"
+  name="check_in_date"
+  required
+  min={new Date().toISOString().split('T')[0]}
+  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+/>
     </div>
     <div>
       <label className="block text-sm font-medium text-gray-700">Check-out Date*</label>
       <input
-        type="date"
-        name="check_out_date"
-        required
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-      />
+  type="date"
+  name="check_out_date"
+  required
+  min={new Date().toISOString().split('T')[0]}
+  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+/>
     </div>
   </div>
 

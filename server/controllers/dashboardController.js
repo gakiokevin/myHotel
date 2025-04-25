@@ -31,6 +31,7 @@ export const getReceptionistStats = async (req, res) => {
       SELECT 
         b.id, 
         b.check_in_date,
+        b.check_out_date,
         b.status,
         CONCAT(g.first_name, ' ', g.last_name) AS guest_name,
         r.room_number,
